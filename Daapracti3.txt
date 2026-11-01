@@ -1,0 +1,91 @@
+Problem Statement: Write a program to solve a fractional Knapsack problem using a greedy
+method.
+Code:
+import java.util.*;
+class Item {
+int value;
+int weight;
+double ratio;
+Item(int value, int weight) {
+this.value = value;
+this.weight = weight;
+this.ratio = (double) value / weight;
+}
+}
+public class FractionalKnapsack {
+public static void main(String[] args) {
+Scanner sc = new Scanner(System.in);
+double capacity = 60;
+System.out.print("Enter number of items: ");
+int n = sc.nextInt();
+Item[] items = new Item[n];
+for (int i = 0; i < n; i++) {
+System.out.print("Enter value of item " + (i + 1) + ": ");
+int value = sc.nextInt();
+System.out.print("Enter weight of item " + (i + 1) + ": ");
+int weight = sc.nextInt();
+items[i] = new Item(value, weight);
+}
+Arrays.sort(items, (a, b) -> Double.compare(b.ratio, a.ratio));
+System.out.println("\nItems after sorting by value/weight ratio:");
+System.out.println("Item\tValue\tWeight\tRatio");
+for (int i = 0; i < n; i++) {
+System.out.printf("%d\t%d\t%d\t%.2f\n",
+i + 1,
+items[i].value,
+items[i].weight,
+items[i].ratio);
+}
+double totalValue = 0;
+for (int i = 0; i < n; i++) {
+if (capacity == 0)
+break;
+if (items[i].weight <= capacity) {
+capacity -= items[i].weight;
+totalValue += items[i].value;
+System.out.println("\nItem " + (i + 1) +
+" taken completely.");
+} else {
+double fraction = capacity / items[i].weight;
+totalValue += items[i].value * fraction;
+System.out.printf("\n%.2f fraction of Item %d taken.",
+fraction, i + 1);
+capacity = 0;
+}
+}
+System.out.printf("\n\nMaximum value in knapsack = %.2f\n",
+totalValue);
+sc.close();
+}
+}
+Output:
+comp@comp-HP-ProDesk-600-G3-SFF:~/Aniket$ javac FractionalKnapsack.java
+comp@comp-HP-ProDesk-600-G3-SFF:~/Aniket$ java FractionalKnapsack
+Enter number of items: 4
+Enter value of item 1: 100
+Enter weight of item 1: 20
+Enter value of item 2: 120
+Enter weight of item 2: 30
+Enter value of item 3: 150
+Enter weight of item 3: 60
+Enter value of item 4: 180
+Enter weight of item 4: 80
+Items after sorting by value/weight ratio:
+Item   
+ Value    Weight    Ratio
+1    
+2    
+3    
+4    
+100    20    
+120    30    
+150    60    
+180    80    
+5.00
+4.00
+2.50
+2.25
+Item 1 taken completely.
+Item 2 taken completely.
+0.17 fraction of Item 3 taken.
+Maximum value in knapsack = 245.00
