@@ -2,61 +2,62 @@ Problem Statement: Write a program to solve a fractional Knapsack problem using 
 method.
 Code:
 import java.util.*;
+
 class Item {
-int value;
-int weight;
-double ratio;
-Item(int value, int weight) {
-this.value = value;
-this.weight = weight;
-this.ratio = (double) value / weight;
+    int value, weight;
+    double ratio;
+
+    Item(int v, int w) {
+        value = v;
+        weight = w;
+        ratio = (double) v / w;
+    }
 }
-}
+
 public class FractionalKnapsack {
-public static void main(String[] args) {
-Scanner sc = new Scanner(System.in);
-double capacity = 60;
-System.out.print("Enter number of items: ");
-int n = sc.nextInt();
-Item[] items = new Item[n];
-for (int i = 0; i < n; i++) {
-System.out.print("Enter value of item " + (i + 1) + ": ");
-int value = sc.nextInt();
-System.out.print("Enter weight of item " + (i + 1) + ": ");
-int weight = sc.nextInt();
-items[i] = new Item(value, weight);
-}
-Arrays.sort(items, (a, b) -> Double.compare(b.ratio, a.ratio));
-System.out.println("\nItems after sorting by value/weight ratio:");
-System.out.println("Item\tValue\tWeight\tRatio");
-for (int i = 0; i < n; i++) {
-System.out.printf("%d\t%d\t%d\t%.2f\n",
-i + 1,
-items[i].value,
-items[i].weight,
-items[i].ratio);
-}
-double totalValue = 0;
-for (int i = 0; i < n; i++) {
-if (capacity == 0)
-break;
-if (items[i].weight <= capacity) {
-capacity -= items[i].weight;
-totalValue += items[i].value;
-System.out.println("\nItem " + (i + 1) +
-" taken completely.");
-} else {
-double fraction = capacity / items[i].weight;
-totalValue += items[i].value * fraction;
-System.out.printf("\n%.2f fraction of Item %d taken.",
-fraction, i + 1);
-capacity = 0;
-}
-}
-System.out.printf("\n\nMaximum value in knapsack = %.2f\n",
-totalValue);
-sc.close();
-}
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        double capacity = 60;
+
+        System.out.print("Enter number of items: ");
+        int n = sc.nextInt();
+        Item[] items = new Item[n];
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter value of item " + (i + 1) + ": ");
+            int v = sc.nextInt();
+            System.out.print("Enter weight of item " + (i + 1) + ": ");
+            int w = sc.nextInt();
+            items[i] = new Item(v, w);
+        }
+
+        Arrays.sort(items, (a, b) -> Double.compare(b.ratio, a.ratio));
+
+        System.out.println("\nItems after sorting by value/weight ratio:");
+        System.out.println("Item\tValue\tWeight\tRatio");
+
+        for (int i = 0; i < n; i++)
+            System.out.printf("%d\t%d\t%d\t%.2f\n",
+                i + 1, items[i].value, items[i].weight, items[i].ratio);
+
+        double totalValue = 0;
+
+        for (int i = 0; i < n && capacity > 0; i++) {
+            if (items[i].weight <= capacity) {
+                capacity -= items[i].weight;
+                totalValue += items[i].value;
+                System.out.println("\nItem " + (i + 1) + " taken completely.");
+            } else {
+                double fraction = capacity / items[i].weight;
+                totalValue += items[i].value * fraction;
+                System.out.printf("\n%.2f fraction of Item %d taken.", fraction, i + 1);
+                capacity = 0;
+            }
+        }
+
+        System.out.printf("\n\nMaximum value in knapsack = %.2f\n", totalValue);
+        sc.close();
+    }
 }
 Output:
 comp@comp-HP-ProDesk-600-G3-SFF:~/Aniket$ javac FractionalKnapsack.java
