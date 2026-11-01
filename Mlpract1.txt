@@ -1,3 +1,6 @@
+Predict price of  the uber ride from given pick point to agreed drop off location perform to ask preprocess dataset, outliers, correlation etc find R2, RSME.
+
+
 import pandas as pd
 import numpy as np
 
