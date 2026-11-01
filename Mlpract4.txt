@@ -1,3 +1,6 @@
+Implement k nearest neighbours algorithm diabetes.csv dataset compute config matrix, accuracy rate precision and recall
+
+
 # ------------------------------------
 # 1. Import Libraries
 # ------------------------------------
