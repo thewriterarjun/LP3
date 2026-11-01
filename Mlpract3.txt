@@ -1,3 +1,6 @@
+Given bank customer build neural network based classifier determine will leave or not in next month.
+
+
 # ------------------------------------
 # 1. Import Libraries
 # ------------------------------------
