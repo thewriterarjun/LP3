@@ -1,3 +1,5 @@
+Classify the email using binary classification method email spam detection has 2 states a) Normal State, b) Abnormal State.
+
 # ------------------------------------
 # 1. Import Libraries
 # ------------------------------------
