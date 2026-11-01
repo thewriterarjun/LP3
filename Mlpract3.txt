@@ -1,0 +1,302 @@
+# ------------------------------------
+# 1. Import Libraries
+# ------------------------------------
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+
+# ------------------------------------
+# 2. Load Dataset
+# ------------------------------------
+
+df = pd.read_csv("Bank.csv")
+
+print("Dataset Shape:", df.shape)
+print("\nColumn Names:")
+print(df.columns.tolist())
+
+print("\nFirst 5 Rows:")
+display(df.head())
+
+print(df.info())
+
+# ------------------------------------
+# 3. Check Missing Values
+# ------------------------------------
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+# ------------------------------------
+# 4. Separate Features and Target
+# ------------------------------------
+
+X = df.drop(columns=["Exited"])
+y = df["Exited"]
+
+print("Feature shape:", X.shape)
+print("Target shape:", y.shape)
+
+# ------------------------------------
+# 5. Remove Unnecessary Columns
+# ------------------------------------
+
+X = X.drop(
+    columns=["RowNumber", "CustomerId", "Surname"]
+)
+
+print("Remaining features:")
+print(X.columns.tolist())
+
+# ------------------------------------
+# 6. Encode Categorical Variables
+# ------------------------------------
+
+X = pd.get_dummies(
+    X,
+    columns=["Geography", "Gender"],
+    drop_first=True
+)
+
+print("Shape after encoding:", X.shape)
+
+display(X.head())
+
+# ------------------------------------
+# 7. Split Dataset into Training and Testing
+# ------------------------------------
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+print("Training data:", X_train.shape)
+print("Testing data:", X_test.shape)
+
+# ------------------------------------
+# 8. Feature Scaling
+# ------------------------------------
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+print("Normalization completed.")
+
+# ------------------------------------
+# 9. Build ANN Model
+# ------------------------------------
+
+model = Sequential()
+
+model.add(
+    Dense(
+        32,
+        activation="relu",
+        input_shape=(X_train.shape[1],)
+    )
+)
+
+model.add(Dropout(0.3))
+
+model.add(
+    Dense(
+        16,
+        activation="relu"
+    )
+)
+
+model.add(Dropout(0.2))
+
+model.add(
+    Dense(
+        1,
+        activation="sigmoid"
+    )
+)
+
+model.summary()
+
+# ------------------------------------
+# 10. Compile ANN Model
+# ------------------------------------
+
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+# ------------------------------------
+# 11. Early Stopping
+# ------------------------------------
+
+early_stopping = EarlyStopping(
+    monitor="val_loss",
+    patience=5,
+    restore_best_weights=True
+)
+
+# ------------------------------------
+# 12. Train ANN Model
+# ------------------------------------
+
+history = model.fit(
+    X_train,
+    y_train,
+    epochs=100,
+    batch_size=32,
+    validation_split=0.2,
+    callbacks=[early_stopping],
+    verbose=1
+)
+
+# ------------------------------------
+# 13. Make Predictions
+# ------------------------------------
+
+y_probability = model.predict(X_test)
+
+y_pred = (y_probability >= 0.5).astype(int).ravel()
+
+print("Predictions completed.")
+
+# ------------------------------------
+# 14. Calculate Accuracy
+# ------------------------------------
+
+accuracy = accuracy_score(y_test, y_pred)
+
+print("Accuracy Score:", round(accuracy, 4))
+print("Accuracy Percentage:", round(accuracy * 100, 2), "%")
+
+# ------------------------------------
+# 15. Generate Confusion Matrix
+# ------------------------------------
+
+cm = confusion_matrix(y_test, y_pred)
+
+print("Confusion Matrix:")
+print(cm)
+
+# ------------------------------------
+# 16. Visualize Confusion Matrix
+# ------------------------------------
+
+plt.figure(figsize=(6, 5))
+
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    xticklabels=["Stayed", "Exited"],
+    yticklabels=["Stayed", "Exited"]
+)
+
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Bank Customer Churn - Confusion Matrix")
+
+plt.show()
+
+# ------------------------------------
+# 17. Classification Report
+# ------------------------------------
+
+print(
+    classification_report(
+        y_test,
+        y_pred,
+        target_names=["Stayed", "Exited"]
+    )
+)
+
+# ------------------------------------
+# 18. Plot Training and Validation Accuracy
+# ------------------------------------
+
+plt.figure(figsize=(8, 5))
+
+plt.plot(
+    history.history["accuracy"],
+    label="Training Accuracy"
+)
+
+plt.plot(
+    history.history["val_accuracy"],
+    label="Validation Accuracy"
+)
+
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.title("Training vs Validation Accuracy")
+plt.legend()
+plt.grid()
+
+plt.show()
+
+# ------------------------------------
+# 19. Plot Training and Validation Loss
+# ------------------------------------
+
+plt.figure(figsize=(8, 5))
+
+plt.plot(
+    history.history["loss"],
+    label="Training Loss"
+)
+
+plt.plot(
+    history.history["val_loss"],
+    label="Validation Loss"
+)
+
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Training vs Validation Loss")
+plt.legend()
+plt.grid()
+
+plt.show()
+
+# ------------------------------------
+# 20. Final Model Performance
+# ------------------------------------
+
+print("=" * 50)
+print("BANK CUSTOMER CHURN PREDICTION")
+print("=" * 50)
+
+print("Total samples:", len(df))
+print("Training samples:", len(X_train))
+print("Testing samples:", len(X_test))
+
+print("\nAccuracy:", round(accuracy * 100, 2), "%")
+
+print("\nConfusion Matrix:")
+print(cm)
+
+print("\nClassification Report:")
+print(classification_report(
+    y_test,
+    y_pred,
+    target_names=["Stayed", "Exited"]
+))
+
+# ------------------------------------

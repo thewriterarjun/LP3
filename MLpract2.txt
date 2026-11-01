@@ -1,0 +1,261 @@
+# ------------------------------------
+# 1. Import Libraries
+# ------------------------------------
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report
+)
+
+# ------------------------------------
+# 2. Load Dataset
+# ------------------------------------
+
+df = pd.read_csv("emails.csv")
+
+print("Dataset Shape:", df.shape)
+print("\nColumns:")
+print(df.columns.tolist())
+
+print("\nFirst 5 rows:")
+display(df.head())
+
+# ------------------------------------
+# 3. Separate Input Features and Target
+# ------------------------------------
+
+X = df.drop(columns=["Email No.", "Prediction"])
+y = df["Prediction"]
+
+print("Features shape:", X.shape)
+print("Target shape:", y.shape)
+
+# ------------------------------------
+# 4. Check and Handle Missing Values
+# ------------------------------------
+
+print("Missing values:", X.isnull().sum().sum())
+print("Missing target values:", y.isnull().sum())
+
+X = X.fillna(0)
+y = y.fillna(0)
+
+# ------------------------------------
+# 5. Display Class Distribution
+# ------------------------------------
+
+print("\nClass Distribution:")
+print(y.value_counts())
+
+# ------------------------------------
+# 6. Visualize Class Distribution
+# ------------------------------------
+
+plt.figure(figsize=(6, 4))
+
+sns.countplot(x=y)
+
+plt.title("Normal vs Spam Emails")
+plt.xlabel("Prediction")
+plt.ylabel("Number of Emails")
+plt.xticks([0, 1], ["Not Spam", "Spam"])
+
+plt.show()
+
+# ------------------------------------
+# 7. Split Dataset into Training and Testing
+# ------------------------------------
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+
+# ------------------------------------
+# 8. Train KNN Classifier
+# ------------------------------------
+
+knn = KNeighborsClassifier(n_neighbors=5)
+
+knn.fit(X_train, y_train)
+
+y_pred_knn = knn.predict(X_test)
+
+print("KNN classification completed.")
+
+# ------------------------------------
+# 9. Evaluate KNN Model
+# ------------------------------------
+
+knn_accuracy = accuracy_score(y_test, y_pred_knn)
+knn_precision = precision_score(y_test, y_pred_knn, zero_division=0)
+knn_recall = recall_score(y_test, y_pred_knn, zero_division=0)
+knn_f1 = f1_score(y_test, y_pred_knn, zero_division=0)
+
+print("========== KNN PERFORMANCE ==========")
+
+print("Accuracy :", round(knn_accuracy, 4))
+print("Precision:", round(knn_precision, 4))
+print("Recall   :", round(knn_recall, 4))
+print("F1 Score :", round(knn_f1, 4))
+
+# ------------------------------------
+# 10. Classification Report for KNN
+# ------------------------------------
+
+print(classification_report(
+    y_test,
+    y_pred_knn,
+    target_names=["Not Spam", "Spam"],
+    zero_division=0
+))
+
+# ------------------------------------
+# 11. KNN Confusion Matrix
+# ------------------------------------
+
+cm_knn = confusion_matrix(y_test, y_pred_knn)
+
+plt.figure(figsize=(6, 5))
+
+sns.heatmap(
+    cm_knn,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    xticklabels=["Not Spam", "Spam"],
+    yticklabels=["Not Spam", "Spam"]
+)
+
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("KNN Confusion Matrix")
+
+plt.show()
+
+# ------------------------------------
+# 12. Train SVM Classifier
+# ------------------------------------
+
+svm = SVC(kernel="linear", random_state=42)
+
+svm.fit(X_train, y_train)
+
+y_pred_svm = svm.predict(X_test)
+
+print("SVM classification completed.")
+
+# ------------------------------------
+# 13. Evaluate SVM Model
+# ------------------------------------
+
+svm_accuracy = accuracy_score(y_test, y_pred_svm)
+svm_precision = precision_score(y_test, y_pred_svm, zero_division=0)
+svm_recall = recall_score(y_test, y_pred_svm, zero_division=0)
+svm_f1 = f1_score(y_test, y_pred_svm, zero_division=0)
+
+print("========== SVM PERFORMANCE ==========")
+
+print("Accuracy :", round(svm_accuracy, 4))
+print("Precision:", round(svm_precision, 4))
+print("Recall   :", round(svm_recall, 4))
+print("F1 Score :", round(svm_f1, 4))
+
+# ------------------------------------
+# 14. Classification Report for SVM
+# ------------------------------------
+
+print(classification_report(
+    y_test,
+    y_pred_svm,
+    target_names=["Not Spam", "Spam"],
+    zero_division=0
+))
+
+# ------------------------------------
+# 15. SVM Confusion Matrix
+# ------------------------------------
+
+cm_svm = confusion_matrix(y_test, y_pred_svm)
+
+plt.figure(figsize=(6, 5))
+
+sns.heatmap(
+    cm_svm,
+    annot=True,
+    fmt="d",
+    cmap="Greens",
+    xticklabels=["Not Spam", "Spam"],
+    yticklabels=["Not Spam", "Spam"]
+)
+
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("SVM Confusion Matrix")
+
+plt.show()
+
+# ------------------------------------
+# 16. Compare KNN and SVM Models
+# ------------------------------------
+
+comparison = pd.DataFrame({
+    "Model": ["KNN", "SVM"],
+    "Accuracy": [knn_accuracy, svm_accuracy],
+    "Precision": [knn_precision, svm_precision],
+    "Recall": [knn_recall, svm_recall],
+    "F1 Score": [knn_f1, svm_f1]
+})
+
+print(comparison.round(4))
+
+# ------------------------------------
+# 17. Visualize Model Comparison
+# ------------------------------------
+
+comparison.set_index("Model").plot(
+    kind="bar",
+    figsize=(10, 6)
+)
+
+plt.title("KNN vs SVM Performance")
+plt.xlabel("Classification Algorithm")
+plt.ylabel("Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=0)
+
+plt.legend(loc="lower right")
+
+plt.show()
+
+# ------------------------------------
+# 18. Display Better Performing Model
+# ------------------------------------
+
+if svm_f1 > knn_f1:
+    print("SVM performs better based on F1 Score.")
+elif knn_f1 > svm_f1:
+    print("KNN performs better based on F1 Score.")
+else:
+    print("Both algorithms have the same F1 Score.")
+
+# ------------------------------------

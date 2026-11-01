@@ -1,0 +1,186 @@
+# ------------------------------------
+# 1. Import Libraries
+# ------------------------------------
+
+import numpy as np
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# ------------------------------------
+# 2. Load Dataset
+# ------------------------------------
+
+data = pd.read_csv("diabetes.csv")
+
+print(data.head())
+
+# ------------------------------------
+# 3. Check Missing Values
+# ------------------------------------
+
+data.isnull().sum()
+
+# ------------------------------------
+# 4. Replace Zeros with Mean
+# ------------------------------------
+
+cols_to_replace = [
+    'Glucose',
+    'BloodPressure',
+    'SkinThickness',
+    'Insulin',
+    'BMI'
+]
+
+for column in cols_to_replace:
+    data[column].replace(0, np.nan, inplace=True)
+    data[column].fillna(
+        round(data[column].mean(skipna=True)),
+        inplace=True
+    )
+
+# ------------------------------------
+# 5. Separate Features and Target
+# ------------------------------------
+
+X = data.iloc[:, :8]       # First 8 columns are features
+Y = data['Outcome']        # Target column
+
+# ------------------------------------
+# 6. Split Data
+# ------------------------------------
+
+X_train, X_test, Y_train, Y_test = train_test_split(
+    X,
+    Y,
+    test_size=0.2,
+    random_state=42
+)
+
+# ------------------------------------
+# 7. Visualize Outliers Using Boxplot
+# ------------------------------------
+
+plt.figure(figsize=(12, 6))
+
+sns.boxplot(data=data)
+
+plt.title("Outlier Detection using Boxplots")
+plt.show()
+
+# ------------------------------------
+# 8. Identify Outliers Using IQR
+# ------------------------------------
+
+Q1 = data.quantile(0.25)
+Q3 = data.quantile(0.75)
+
+IQR = Q3 - Q1
+
+# ------------------------------------
+# 9. Display Count of Outliers
+# ------------------------------------
+
+outliers = (
+    (data < (Q1 - 1.5 * IQR)) |
+    (data > (Q3 + 1.5 * IQR))
+).sum()
+
+print("\nNumber of Outliers per Feature:\n", outliers)
+
+# ------------------------------------
+# 10. Initialize KNN Model
+# ------------------------------------
+
+knn = KNeighborsClassifier(n_neighbors=5)
+
+knn.fit(X_train, Y_train)
+
+# ------------------------------------
+# 11. Make Predictions
+# ------------------------------------
+
+knn_pred = knn.predict(X_test)
+
+# ------------------------------------
+# 12. Calculate Performance Metrics
+# ------------------------------------
+
+cm = confusion_matrix(Y_test, knn_pred)
+
+accuracy = accuracy_score(Y_test, knn_pred)
+
+error_rate = 1 - accuracy
+
+precision = precision_score(Y_test, knn_pred)
+
+recall = recall_score(Y_test, knn_pred)
+
+f1 = f1_score(Y_test, knn_pred)
+
+# ------------------------------------
+# 13. Print Results
+# ------------------------------------
+
+print("Confusion Matrix:\n", cm)
+
+print("Accuracy Score:", accuracy)
+
+print("Error Rate:", error_rate)
+
+print("Precision Score:", precision)
+
+print("Recall Score:", recall)
+
+print("F1 Score:", f1)
+
+# ------------------------------------
+# 14. Compare Accuracy for Different K Values
+# ------------------------------------
+
+accuracy_scores = []
+
+for k in [3, 5, 7]:
+
+    knn = KNeighborsClassifier(n_neighbors=k)
+
+    knn.fit(X_train, Y_train)
+
+    knn_pred = knn.predict(X_test)
+
+    acc = accuracy_score(Y_test, knn_pred)
+
+    accuracy_scores.append(acc)
+
+    print(f"K = {k} → Accuracy = {acc * 100:.2f}%")
+
+# ------------------------------------
+# 15. Plot KNN Accuracy vs K Value
+# ------------------------------------
+
+plt.plot([3, 5, 7], accuracy_scores, marker='o')
+
+plt.title("KNN Accuracy vs K Value")
+
+plt.xlabel("K Value")
+
+plt.ylabel("Accuracy")
+
+plt.grid(True)
+
+plt.show()
+
+# ------------------------------------
